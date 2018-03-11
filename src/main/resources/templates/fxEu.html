@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/js/chart.js}"></script>
+<title>STOCK Market DEMO</title>
+</head>
+<body>
+<center>
+	<h6>
+ 		<label style="color: lightblue">
+ 		Daily Stock Exchange Data taken from  <a href='https://iextrading.com/' target='_blank'>IEX</a> updated up to every 30 minute during Trading hours in USA.
+ 		</label>&#32;
+			<label id="stockUpdateTimeId" style="color: #0066cc;">UPDATING...</label>
+	</h6>
+
+	<h5>
+		<a href="https://iextrading.com/apps/stocks/#/GOOGL" target="_blank">
+			<label id="googleId" style="color: white;">Google</label>
+		</a>&#32; <a href="https://iextrading.com/apps/stocks/#/AAPL"
+			target="_blank"> <label id="appleId" style="color: white;">Apple</label></a>&#32;
+		<a href="https://iextrading.com/apps/stocks/#/ORCL" target="_blank">
+			<label id="oracleId" style="color: white;">Oracle</label>
+		</a>&#32; <a href="https://iextrading.com/apps/stocks/#/IBM"
+			target="_blank"> <label id="iBMId" style="color: white;">IBM</label>
+		</a>&#32; <a href="https://iextrading.com/apps/stocks/#/BCS"
+			target="_blank"> <label id="barclaysId" style="color: white;">Barclays</label>
+		</a>&#32; <a href="https://iextrading.com/apps/stocks/#/LYG"
+			target="_blank"> <label id="lloydsId" style="color: white;">Lloyds
+				US</label>
+		</a>&#32; <a href="https://iextrading.com/apps/stocks/#/C" target="_blank">
+			<label id="citiId" style="color: white;">Citi</label>
+		</a>&#32; <a href="https://iextrading.com/apps/stocks/#/JPM"
+			target="_blank"> <label id="morganId" style="color: white;">JP
+				Morgan</label>
+		</a>
+	</h5>
+	<table style="margin: 0; padding: 0; width: 100%;">
+		<tr>
+			<td><a href="https://iextrading.com/apps/stocks/#/GOOGL"
+				target="_blank"> <img id="imgGoogleId" th:src="${googleUrl}"></img></a></td>
+			<td>
+			<a href="https://iextrading.com/apps/stocks/#/AAPL" target="_blank">
+			    <img id="imgAppleId" th:src="${appleUrl}"></img>
+			</a>
+			</td>
+		</tr>
+		<tr>
+			<td><a href="https://iextrading.com/apps/stocks/#/ORCL"
+				target="_blank"> <img id="imgOracleId" th:src="${oracleUrl}"></img>
+			</a></td>
+			<td><a href="https://iextrading.com/apps/stocks/#/IBM"
+				target="_blank"> <img id="imgIbmId" th:src="${ibmUrl}"></img>
+			</a></td>
+		</tr>
+		<tr>
+			<td><a href="https://iextrading.com/apps/stocks/#/BCS"
+				target="_blank"> <img id="imgBarclaysId" th:src="${barclaysUrl}"></img>
+			</a></td>
+			<td><a href="https://iextrading.com/apps/stocks/#/LYG"
+				target="_blank"> <img id="imgLloydsId" th:src="${lloydsUrl}"></img>
+			</a></td>
+		</tr>
+		<tr>
+			<td><a href="https://iextrading.com/apps/stocks/#/JPM"
+				target="_blank"> <img id="imgMorganId" th:src="${morganUrl}"></img>
+			</a></td>
+			<td><a href="https://iextrading.com/apps/stocks/#/C"
+				target="_blank"> <img id="imgCitiId" th:src="${citiUrl}"></img>
+			</a></td>
+		</tr>
+	</table>
+
+	<input id="googleUrlId" type="hidden" th:value="${googleUrl}"></input>
+	<input id="appleUrlId" type="hidden" th:value="${appleUrl}"></input>
+	<input id="oracleUrlId" type="hidden" th:value="${oracleUrl}"></input>
+	<input id="ibmUrlId" type="hidden" th:value="${ibmUrl}"></input>
+	<input id="barclaysUrlId" type="hidden" th:value="${barclaysUrl}"></input>
+	<input id="lloydsUrlId" type="hidden" th:value="${lloydsUrl}"></input>
+	<input id="morganUrlId" type="hidden" th:value="${morganUrl}"></input>
+	<input id="citiUrlId" type="hidden" th:value="${citiUrl}"></input>
+	<br />
+	<input id="chartViewUrlId" type="hidden" th:value="${chartViewUrl}"></input>
+	<input id="currentStockMarketAjax" type="hidden" th:value="@{/currentStockMarketAjax}" />
+	</center>
+</body>
+</html>

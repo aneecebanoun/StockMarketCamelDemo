@@ -26,27 +26,33 @@ public class StockMarketRoute extends RouteBuilder {
 
 	private static final String STOCK_URL = "https://api.iextrading.com/1.0/stock/STOCKSYMBOL/chart/1d";
 	private static final String STOCK_SYMBOL = "STOCKSYMBOL";
-	public static final String WAIT_TIME = Long.toString(1*60*1000L);
+	public static final String WAIT_TIME = Long.toString(1*10*1000L);
 
 	@Override
 	public void configure() throws Exception {
 		StockSymbol.SYMBOLS_MAP.keySet().stream().forEach(symbol -> {
-			StockSymbol stockSymbol = StockSymbol.SYMBOLS_MAP.get(symbol);
-			from("timer:stock?period="+WAIT_TIME).enrich(STOCK_URL.replace(STOCK_SYMBOL, symbol)).process(exchange -> {
-				processMarketSymbol(stockSymbol, exchange);
-			});
+			route(symbol);
 		});
 	}
 
+	private void route(final String symbol) {
+		from("timer:stock?period="+WAIT_TIME)
+		.enrich(STOCK_URL.replace(STOCK_SYMBOL, symbol))
+		.process(exchange -> processMarketSymbol( StockSymbol.SYMBOLS_MAP.get(symbol), exchange));
+	}
+
+	@SuppressWarnings("unchecked")
 	private void processMarketSymbol(final StockSymbol stockSymbol, final Exchange exchange)
 			throws IOException, JsonParseException, JsonMappingException {
-		final LocalDateTime currentLocalDateTime = LocalDateTime.now();
-		final String currentTime = currentLocalDateTime.format(DateTimeFormatter.ofPattern(StockSymbol.DATE_PATTERN));
+		final String jsonString = exchange.getIn().getBody(String.class);
+		stockSymbol.setDayHistory(converter(new ObjectMapper().readValue(jsonString, List.class)));
+		adjustStockSymbol(stockSymbol);
+	}
+
+	private void adjustStockSymbol(final StockSymbol stockSymbol) {
+		final String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(StockSymbol.DATE_PATTERN));
 		stockSymbol.setLastUpdatTime(currentTime);
 		stockSymbol.setDayHistoryLastUpdatTime(currentTime);
-		final String jsonString = exchange.getIn().getBody(String.class);
-		final List<StockEntry> entries = converter(new ObjectMapper().readValue(jsonString, List.class));
-		stockSymbol.setDayHistory(entries);
 		final List<StockEntry> sortedDayHistory = stockSymbol.getSortedDayHistory();
 		stockSymbol.setCurrentPrice(sortedDayHistory.get(0).getAverage().toString());
 		stockSymbol.setPreviousPrice(sortedDayHistory.get(1).getAverage().toString());
@@ -55,16 +61,24 @@ public class StockMarketRoute extends RouteBuilder {
 	private List<StockEntry> converter(final List<Map<String, Object>> symbolEntries) {
 		final List<StockEntry> entries = new ArrayList<>();
 		symbolEntries.stream().forEach(symbolEntry -> {
-			if(!isNull(symbolEntry.get("date"), symbolEntry.get("minute"), symbolEntry.get("average")) && Double.parseDouble(symbolEntry.get("average").toString())!=0.0){
-				final StockEntry stockEntry = new StockEntry();
-				final String time = symbolEntry.get("date").toString() + symbolEntry.get("minute").toString();
-				stockEntry.setDateTime(time);
-				stockEntry.setLocalDateTime(LocalDateTime.parse(time, DateTimeFormatter.ofPattern(StockSymbol.DATE_PATTERN)));
-				stockEntry.setAverage(Double.parseDouble(symbolEntry.get("average").toString()));
-				stockEntry.setMarketAverage(Double.parseDouble(symbolEntry.get("marketAverage").toString()));
-				entries.add(stockEntry);
+			if(isValidEntry(symbolEntry)){
+				entries.add(getSymbolEntry(symbolEntry));
 			}
 		});
 		return entries;
+	}
+
+	private StockEntry getSymbolEntry(final Map<String, Object> symbolEntry) {
+		final StockEntry stockEntry = new StockEntry();
+		final String time = symbolEntry.get("date").toString() + symbolEntry.get("minute").toString();
+		stockEntry.setDateTime(time);
+		stockEntry.setLocalDateTime(LocalDateTime.parse(time, DateTimeFormatter.ofPattern(StockSymbol.DATE_PATTERN)));
+		stockEntry.setAverage(Double.parseDouble(symbolEntry.get("average").toString()));
+		stockEntry.setMarketAverage(Double.parseDouble(symbolEntry.get("marketAverage").toString()));
+		return stockEntry;
+	}
+
+	private boolean isValidEntry(final Map<String, Object> symbolEntry) {
+		return !isNull(symbolEntry.get("date"), symbolEntry.get("minute"), symbolEntry.get("average")) && Double.parseDouble(symbolEntry.get("average").toString())!=0.0;
 	}
 }
